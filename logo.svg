@@ -1,63 +1,50 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#0d1117"/>
-      <stop offset="100%" style="stop-color:#161b22"/>
+      <stop offset="0%" style="stop-color:#1a1f2e"/>
+      <stop offset="100%" style="stop-color:#232a3b"/>
     </linearGradient>
     <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" style="stop-color:#c9a04a"/>
       <stop offset="100%" style="stop-color:#e8c56d"/>
     </linearGradient>
-    <linearGradient id="page1" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#2d333b;stop-opacity:0.6"/>
-      <stop offset="100%" style="stop-color:#1c2128;stop-opacity:0.4"/>
-    </linearGradient>
-    <linearGradient id="page2" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#484f58;stop-opacity:0.5"/>
-      <stop offset="100%" style="stop-color:#2d333b;stop-opacity:0.3"/>
-    </linearGradient>
   </defs>
 
   <!-- Background circle -->
-  <circle cx="256" cy="256" r="248" fill="url(#bg)" stroke="#21262d" stroke-width="2"/>
+  <circle cx="256" cy="256" r="248" fill="url(#bg)" stroke="#3d4663" stroke-width="2"/>
 
-  <!-- Layered pages (the palimpsest metaphor) -->
-  <!-- Back page -->
-  <rect x="145" y="105" width="230" height="300" rx="6" fill="url(#page2)" transform="rotate(-6 260 255)"/>
-  <!-- Middle page -->
-  <rect x="140" y="100" width="230" height="300" rx="6" fill="url(#page1)" transform="rotate(-2 255 250)"/>
-  <!-- Front page -->
-  <rect x="135" y="95" width="230" height="300" rx="6" fill="#1c2128" stroke="#2d333b" stroke-width="1.5" transform="rotate(2 250 245)"/>
+  <!-- Layered pages -->
+  <rect x="145" y="105" width="230" height="300" rx="6" fill="#3d4663" opacity="0.7" transform="rotate(-6 260 255)"/>
+  <rect x="140" y="100" width="230" height="300" rx="6" fill="#4a5478" opacity="0.6" transform="rotate(-2 255 250)"/>
+  <rect x="135" y="95" width="230" height="300" rx="6" fill="#2e3550" stroke="#4a5478" stroke-width="1.5" transform="rotate(2 250 245)"/>
 
-  <!-- Text lines on front page (conversation metaphor) -->
   <!-- User line -->
   <rect x="165" y="140" width="12" height="3" rx="1.5" fill="#c9a04a" transform="rotate(2 250 245)"/>
-  <rect x="182" y="140" width="140" height="3" rx="1.5" fill="#8b949e" opacity="0.5" transform="rotate(2 250 245)"/>
+  <rect x="182" y="140" width="140" height="3" rx="1.5" fill="#8b9bc0" opacity="0.6" transform="rotate(2 250 245)"/>
 
   <!-- Assistant lines -->
-  <rect x="165" y="158" width="12" height="3" rx="1.5" fill="#7c8cf5" transform="rotate(2 250 245)"/>
-  <rect x="182" y="158" width="160" height="3" rx="1.5" fill="#8b949e" opacity="0.4" transform="rotate(2 250 245)"/>
-  <rect x="182" y="168" width="130" height="3" rx="1.5" fill="#8b949e" opacity="0.3" transform="rotate(2 250 245)"/>
-  <rect x="182" y="178" width="145" height="3" rx="1.5" fill="#8b949e" opacity="0.3" transform="rotate(2 250 245)"/>
+  <rect x="165" y="158" width="12" height="3" rx="1.5" fill="#8b9bf5" transform="rotate(2 250 245)"/>
+  <rect x="182" y="158" width="160" height="3" rx="1.5" fill="#8b9bc0" opacity="0.5" transform="rotate(2 250 245)"/>
+  <rect x="182" y="168" width="130" height="3" rx="1.5" fill="#8b9bc0" opacity="0.4" transform="rotate(2 250 245)"/>
+  <rect x="182" y="178" width="145" height="3" rx="1.5" fill="#8b9bc0" opacity="0.4" transform="rotate(2 250 245)"/>
 
   <!-- Tool call dot + line -->
-  <circle cx="172" cy="200" r="4" fill="#484f58" transform="rotate(2 250 245)"/>
-  <rect x="182" y="198" width="110" height="3" rx="1.5" fill="#484f58" opacity="0.4" transform="rotate(2 250 245)"/>
+  <circle cx="172" cy="200" r="4" fill="#6b7aa0" transform="rotate(2 250 245)"/>
+  <rect x="182" y="198" width="110" height="3" rx="1.5" fill="#6b7aa0" opacity="0.5" transform="rotate(2 250 245)"/>
 
   <!-- More assistant -->
-  <rect x="165" y="220" width="12" height="3" rx="1.5" fill="#7c8cf5" transform="rotate(2 250 245)"/>
-  <rect x="182" y="220" width="150" height="3" rx="1.5" fill="#8b949e" opacity="0.4" transform="rotate(2 250 245)"/>
-  <rect x="182" y="230" width="120" height="3" rx="1.5" fill="#8b949e" opacity="0.3" transform="rotate(2 250 245)"/>
+  <rect x="165" y="220" width="12" height="3" rx="1.5" fill="#8b9bf5" transform="rotate(2 250 245)"/>
+  <rect x="182" y="220" width="150" height="3" rx="1.5" fill="#8b9bc0" opacity="0.5" transform="rotate(2 250 245)"/>
+  <rect x="182" y="230" width="120" height="3" rx="1.5" fill="#8b9bc0" opacity="0.4" transform="rotate(2 250 245)"/>
 
   <!-- Edit diff lines -->
-  <rect x="182" y="250" width="100" height="3" rx="1.5" fill="#f85149" opacity="0.4" transform="rotate(2 250 245)"/>
-  <rect x="182" y="260" width="115" height="3" rx="1.5" fill="#3fb950" opacity="0.4" transform="rotate(2 250 245)"/>
+  <rect x="182" y="250" width="100" height="3" rx="1.5" fill="#f87171" opacity="0.7" transform="rotate(2 250 245)"/>
+  <rect x="182" y="260" width="115" height="3" rx="1.5" fill="#4ade80" opacity="0.7" transform="rotate(2 250 245)"/>
 
   <!-- Another user -->
   <rect x="165" y="282" width="12" height="3" rx="1.5" fill="#c9a04a" transform="rotate(2 250 245)"/>
-  <rect x="182" y="282" width="130" height="3" rx="1.5" fill="#8b949e" opacity="0.5" transform="rotate(2 250 245)"/>
+  <rect x="182" y="282" width="130" height="3" rx="1.5" fill="#8b9bc0" opacity="0.6" transform="rotate(2 250 245)"/>
 
-  <!-- Psi symbol watermark -->
-  <text x="256" y="445" font-family="Georgia, serif" font-size="48" fill="url(#gold)" text-anchor="middle" opacity="0.8">&#936;</text>
-
+  <!-- Psi symbol -->
+  <text x="256" y="445" font-family="Georgia, serif" font-size="48" fill="url(#gold)" text-anchor="middle" opacity="0.9">&#936;</text>
 </svg>
