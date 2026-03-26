@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Palimpsest</title>
+<link id="hljs-theme" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark-dimmed.min.css">
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<style>
+/* ── Theme variables ── */
+[data-theme="dark"] {
+  --bg:#0d1117; --bg2:#161b22; --bg3:#1c2128; --bg4:#2d333b;
+  --fg:#c9d1d9; --fg2:#8b949e; --fg3:#484f58;
+  --accent:#c9a04a; --blue:#7c8cf5; --green:#3fb950; --red:#f85149;
+  --border:#21262d;
+  --user-bg:#1a2332; --user-border:#3b82f6; --user-label:#60a5fa;
+  --asst-bg:#1a1625; --asst-border:#8b5cf6; --asst-label:#a78bfa;
+}
+[data-theme="light"] {
+  --bg:#ffffff; --bg2:#f6f8fa; --bg3:#eaeef2; --bg4:#d0d7de;
+  --fg:#1f2328; --fg2:#656d76; --fg3:#8b949e;
+  --accent:#9a7b2e; --blue:#4f46e5; --green:#1a7f37; --red:#cf222e;
+  --border:#d0d7de;
+  --user-bg:#eff6ff; --user-border:#3b82f6; --user-label:#2563eb;
+  --asst-bg:#f5f3ff; --asst-border:#8b5cf6; --asst-label:#7c3aed;
+}
+:root { --mono:'SF Mono','Fira Code','JetBrains Mono',monospace; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:-apple-system,system-ui,sans-serif; background:var(--bg); color:var(--fg); height:100vh; overflow:hidden; font-size:14px; }
+a { color:var(--accent); }
+
+/* Layout */
+#app { display:flex; height:100vh; }
+#sidebar { width:340px; min-width:340px; background:var(--bg2); border-right:1px solid var(--border); display:flex; flex-direction:column; }
+#main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+
+/* Sidebar header */
+#sidebar-header { padding:14px 16px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+#sidebar-header .left h1 { font-family:Georgia,serif; font-size:18px; color:var(--accent); letter-spacing:.5px; }
+#sidebar-header .left .sub { font-size:10px; color:var(--fg3); text-transform:uppercase; letter-spacing:1.5px; margin-top:1px; }
+#theme-btn { background:none; border:1px solid var(--border); border-radius:4px; padding:4px 8px; cursor:pointer; font-size:14px; color:var(--fg2); }
+#theme-btn:hover { border-color:var(--fg3); }
+
+/* Tabs */
+#tabs { display:flex; border-bottom:1px solid var(--border); }
+.tab { flex:1; padding:8px 0; background:none; border:none; border-bottom:2px solid transparent; color:var(--fg3); font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.8px; cursor:pointer; }
+.tab:hover { color:var(--fg2); }
+.tab.active { color:var(--accent); border-bottom-color:var(--accent); }
+
+/* Search */
+#search-box { padding:8px 12px; border-bottom:1px solid var(--border); }
+#search-input { width:100%; padding:6px 10px; background:var(--bg); border:1px solid var(--border); border-radius:4px; color:var(--fg); font-size:13px; outline:none; }
+#search-input:focus { border-color:var(--fg3); }
+
+/* Session list */
+#session-list { flex:1; overflow-y:auto; }
+.sess { padding:10px 14px; border-bottom:1px solid var(--border); cursor:pointer; display:flex; gap:8px; align-items:flex-start; }
+.sess:hover { background:var(--bg3); }
+.sess.active { background:var(--bg4); border-left:2px solid var(--accent); }
+.sess-actions { display:flex; flex-direction:column; gap:2px; flex-shrink:0; margin-top:1px; }
+.sess-star { font-size:14px; opacity:.3; cursor:pointer; line-height:1; }
+.sess-star.on { opacity:1; color:var(--accent); }
+.sess-rename-btn { font-size:12px; opacity:.2; cursor:pointer; line-height:1; }
+.sess:hover .sess-rename-btn { opacity:.5; }
+.sess-rename-btn:hover { opacity:1 !important; color:var(--accent); }
+.sess-rename-input { width:100%; padding:3px 6px; background:var(--bg); border:1px solid var(--accent); border-radius:3px; color:var(--fg); font-size:12px; outline:none; margin-bottom:4px; }
+.sess-body { flex:1; min-width:0; }
+.sess-name { font-size:12px; color:var(--accent); font-weight:600; margin-bottom:2px; }
+.sess-summary { font-size:13px; color:var(--fg); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; line-height:1.4; }
+.sess-meta { font-size:11px; color:var(--fg3); margin-top:4px; display:flex; gap:6px; align-items:center; }
+.sess-meta .proj { color:var(--fg2); }
+
+/* Folder list */
+.folder { padding:10px 14px; border-bottom:1px solid var(--border); cursor:pointer; }
+.folder:hover { background:var(--bg3); }
+.folder-name { font-size:13px; color:var(--fg); font-weight:500; }
+.folder-path { font-size:11px; color:var(--fg3); font-family:var(--mono); margin-top:2px; }
+.folder-count { font-size:11px; color:var(--fg3); margin-top:2px; }
+.folder-back { padding:8px 14px; border-bottom:1px solid var(--border); cursor:pointer; color:var(--accent); font-size:12px; font-weight:600; }
+.folder-back:hover { background:var(--bg3); }
+
+/* Search results */
+.search-snippet { font-size:11px; color:var(--fg2); font-family:var(--mono); margin-top:4px; line-height:1.3; }
+
+/* Main panel empty */
+#empty { display:flex; align-items:center; justify-content:center; height:100%; color:var(--fg3); flex-direction:column; }
+#empty .glyph { font-family:Georgia,serif; font-size:64px; opacity:.3; }
+#conv-view { display:none; flex-direction:column; height:100%; }
+#conv-view.show { display:flex; }
+
+/* Conv header */
+#conv-header { padding:10px 20px; border-bottom:1px solid var(--border); background:var(--bg2); display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:48px; flex-wrap:wrap; }
+#conv-header .left { flex:1; min-width:0; }
+#conv-header .title { font-size:13px; color:var(--fg); font-weight:500; display:flex; align-items:center; gap:8px; }
+#conv-header .detail { font-size:11px; color:var(--fg3); margin-top:2px; }
+.header-actions { display:flex; gap:6px; flex-shrink:0; }
+.hdr-btn { padding:4px 10px; background:var(--bg); border:1px solid var(--border); border-radius:4px; color:var(--fg2); font-size:11px; cursor:pointer; white-space:nowrap; }
+.hdr-btn:hover { border-color:var(--fg3); color:var(--fg); }
+.hdr-btn.accent { color:var(--accent); font-family:var(--mono); }
+.hdr-btn.accent:hover { border-color:var(--accent); }
+
+/* Filters */
+#filters { display:flex; gap:4px; padding:6px 20px; border-bottom:1px solid var(--border); background:var(--bg2); flex-wrap:wrap; }
+.filter-btn { padding:3px 10px; background:var(--bg); border:1px solid var(--border); border-radius:3px; color:var(--fg2); font-size:11px; cursor:pointer; }
+.filter-btn.on { background:var(--bg4); color:var(--fg); border-color:var(--fg3); }
+.filter-btn:hover { border-color:var(--fg3); }
+
+/* Messages */
+#messages { flex:1; overflow-y:auto; padding:16px 20px 200px; }
+
+/* User message — full, distinct color */
+.msg-user { margin-bottom:12px; padding:8px 14px; border-left:3px solid var(--user-border); border-radius:4px; background:var(--user-bg); }
+.msg-user-label { font-size:10px; font-weight:700; color:var(--user-label); text-transform:uppercase; letter-spacing:.5px; margin-bottom:4px; }
+.msg-user-text { font-size:13px; line-height:1.5; white-space:pre-wrap; word-break:break-word; color:var(--fg); }
+
+/* Assistant text — distinct purple, no wrapper around tool calls */
+.msg-asst-text { margin-bottom:6px; padding:8px 14px; border-left:3px solid var(--asst-border); border-radius:4px; background:var(--asst-bg); }
+.msg-asst-label { font-size:10px; font-weight:700; color:var(--asst-label); text-transform:uppercase; letter-spacing:.5px; margin-bottom:4px; }
+.msg-text { font-size:13px; line-height:1.6; }
+.msg-text p { margin-bottom:.5em; } .msg-text p:last-child { margin-bottom:0; }
+.msg-text code { font-family:var(--mono); font-size:.9em; background:var(--bg3); padding:1px 5px; border-radius:3px; color:var(--accent); }
+.msg-text pre { margin:.5em 0; border-radius:4px; overflow-x:auto; }
+.msg-text pre code { display:block; padding:12px; background:var(--bg); font-size:12px; line-height:1.5; color:var(--fg); }
+.msg-text h1,.msg-text h2,.msg-text h3,.msg-text h4 { margin:.8em 0 .3em; color:var(--fg); }
+.msg-text h1{font-size:1.2em} .msg-text h2{font-size:1.1em} .msg-text h3{font-size:1.05em}
+.msg-text ul,.msg-text ol { margin:.3em 0 .5em 1.4em; }
+.msg-text blockquote { border-left:3px solid var(--fg3); padding-left:10px; color:var(--fg2); margin:.5em 0; }
+.msg-text a { color:var(--accent); }
+.msg-text table { border-collapse:collapse; margin:.5em 0; font-size:12px; }
+.msg-text th,.msg-text td { border:1px solid var(--border); padding:3px 8px; }
+.msg-text th { background:var(--bg3); }
+
+/* Edit diff colors */
+.diff-old { color:var(--red); background:rgba(248,81,73,.1); }
+.diff-new { color:var(--green); background:rgba(63,185,80,.1); }
+.diff-old::before { content:'- '; }
+.diff-new::before { content:'+ '; }
+.write-content { color:var(--green); }
+
+/* Tool call — compact, no wasted vertical space */
+.tool-call { margin:2px 0; font-family:var(--mono); font-size:12px; }
+.tool-header { display:flex; align-items:center; gap:5px; cursor:pointer; padding:1px 0; }
+.tool-header:hover { opacity:.8; }
+.tool-dot { width:8px; height:8px; border-radius:50%; background:var(--fg3); flex-shrink:0; }
+.tool-name { font-weight:600; color:var(--fg); font-size:12px; }
+.tool-summary { color:var(--fg2); font-size:12px; }
+.tool-body { display:none; margin-left:13px; padding-left:8px; border-left:1px solid var(--border); margin-top:1px; }
+.tool-body.open { display:block; }
+.tool-body pre { font-size:12px; line-height:1.3; color:var(--fg2); white-space:pre-wrap; word-break:break-word; max-height:300px; overflow-y:auto; margin:0; }
+
+/* Tool result */
+.tool-result { margin-left:13px; padding-left:8px; border-left:1px solid var(--border); margin-top:1px; margin-bottom:2px; }
+.tool-result pre { font-size:12px; line-height:1.3; white-space:pre-wrap; word-break:break-word; max-height:400px; overflow-y:auto; margin:0; color:var(--fg2); }
+.tool-result.error pre { color:var(--red); }
+
+/* Thinking */
+.thinking { margin:6px 0; font-size:12px; color:var(--fg3); font-style:italic; cursor:pointer; }
+.thinking-body { display:none; white-space:pre-wrap; margin-top:4px; max-height:300px; overflow-y:auto; }
+.thinking-body.open { display:block; }
+
+/* Toast */
+#toast { position:fixed; bottom:16px; right:16px; padding:8px 16px; background:var(--bg4); border:1px solid var(--accent); border-radius:4px; color:var(--accent); font-size:13px; opacity:0; transition:opacity .3s; pointer-events:none; z-index:99; }
+#toast.show { opacity:1; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width:6px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--fg3); border-radius:3px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="sidebar">
+    <div id="sidebar-header">
+      <div class="left"><h1>Palimpsest</h1><div class="sub">Claude Code History</div></div>
+      <div style="display:flex;gap:4px">
+        <button id="theme-btn" onclick="toggleTheme()" title="Toggle theme">&#9681;</button>
+        <button id="theme-btn" onclick="refresh()" title="Refresh">&#8635;</button>
+      </div>
+    </div>
+    <div id="tabs">
+      <button class="tab active" data-tab="recent" onclick="switchTab('recent')">Recent</button>
+      <button class="tab" data-tab="folders" onclick="switchTab('folders')">Folders</button>
+    </div>
+    <div id="search-box"><input type="text" id="search-input" placeholder="Search conversations..." oninput="onSearch(this.value)"></div>
+    <div id="session-list"></div>
+  </div>
+  <div id="main">
+    <div id="empty"><div class="glyph">&Psi;</div><h3 style="margin-top:12px;font-family:Georgia,serif">Select a conversation</h3></div>
+    <div id="conv-view">
+      <div id="conv-header">
+        <div class="left">
+          <div class="title"><span id="conv-title"></span><span id="conv-star" style="cursor:pointer;font-size:16px" onclick="toggleStar()"></span></div>
+          <div class="detail" id="conv-detail"></div>
+        </div>
+        <div class="header-actions">
+          <button class="hdr-btn" onclick="renameConv()" title="Rename">Rename</button>
+          <button class="hdr-btn" onclick="exportMd()" title="Export Markdown">Export .md</button>
+          <button class="hdr-btn accent" id="continue-btn" onclick="copyContinue()"></button>
+        </div>
+      </div>
+      <div id="conv-search-box" style="padding:6px 20px;border-bottom:1px solid var(--border);background:var(--bg2)">
+        <input type="text" id="conv-search" placeholder="Search in conversation..." style="width:100%;padding:5px 10px;background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--fg);font-size:12px;outline:none" oninput="searchInConv(this.value)">
+      </div>
+      <div id="filters">
+        <button class="filter-btn on" data-filter="user" onclick="toggleFilter('user',this)">User</button>
+        <button class="filter-btn on" data-filter="assistant" onclick="toggleFilter('assistant',this)">Assistant</button>
+        <button class="filter-btn on" data-filter="tools" onclick="toggleFilter('tools',this)">Tools</button>
+        <button class="filter-btn" data-filter="thinking" onclick="toggleFilter('thinking',this)">Thinking</button>
+        <button class="filter-btn" data-filter="results" onclick="toggleFilter('results',this)">Results</button>
+      </div>
+      <div id="messages"></div>
+    </div>
+  </div>
+</div>
+<div id="toast"></div>
+<script>
+const $ = s => document.querySelector(s);
+let state = { tab:'recent', sessions:[], projects:[], currentSid:null, searchTimeout:null, folderProject:null };
+
+// ── API ──
+async function api(path, opts) { return (await fetch(path, opts)).json(); }
+async function post(path, body) { return api(path, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); }
+
+// ── Theme ──
+function toggleTheme() {
+  const html = document.documentElement;
+  const next = html.dataset.theme === 'dark' ? 'light' : 'dark';
+  html.dataset.theme = next;
+  localStorage.setItem('palimpsest-theme', next);
+  $('#hljs-theme').href = next === 'dark'
+    ? 'https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark-dimmed.min.css'
+    : 'https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github.min.css';
+}
+// Restore saved theme
+(function(){const t=localStorage.getItem('palimpsest-theme');if(t){document.documentElement.dataset.theme=t;if(t==='light')$('#hljs-theme').href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github.min.css';}})();
+
+// ── Time ──
+function timeAgo(d) {
+  if (!d) return '';
+  const ms = Date.now()-new Date(d).getTime(), m=ms/60000|0;
+  if(m<1)return'now';if(m<60)return m+'m';const h=m/60|0;
+  if(h<24)return h+'h';const dy=h/24|0;
+  if(dy<30)return dy+'d';
+  return new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+}
+function fmtDate(d){if(!d)return'';return new Date(d).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});}
+function shortenPath(p){const home='/Users/'+(p.split('/')[2]||'');return p.replace(home,'~');}
+
+// ── Tabs ──
+function switchTab(tab) {
+  state.tab=tab; state.folderProject=null;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===tab));
+  $('#search-input').value='';
+  if(tab==='recent')loadRecent();else loadFolders();
+}
+
+// ── Recent ──
+async function loadRecent(){state.sessions=await api('/api/sessions');renderSessionList(state.sessions);}
+
+// ── Folders ──
+async function loadFolders() {
+  if(state.folderProject){
+    const sessions=await api('/api/sessions?project='+encodeURIComponent(state.folderProject));
+    let html='<div class="folder-back" onclick="state.folderProject=null;loadFolders()">&#8592; All Folders</div>';
+    html+=sessions.map(s=>sessionHTML(s)).join('');
+    $('#session-list').innerHTML=html; return;
+  }
+  state.projects=await api('/api/projects');
+  $('#session-list').innerHTML=state.projects.map(p=>`
+    <div class="folder" onclick="state.folderProject='${p.id}';loadFolders()">
+      <div class="folder-name">${esc(p.name)}</div>
+      <div class="folder-path">${esc(shortenPath(p.path))}</div>
+      <div class="folder-count">${p.count} session${p.count!==1?'s':''} &middot; ${timeAgo(p.last_modified)}</div>
+    </div>`).join('');
+}
+
+// ── Search ──
+function onSearch(q) {
+  clearTimeout(state.searchTimeout);
+  if(!q.trim()){state.tab==='recent'?loadRecent():loadFolders();return;}
+  state.searchTimeout=setTimeout(async()=>{
+    const results=await api('/api/search?q='+encodeURIComponent(q));
+    $('#session-list').innerHTML=results.length
+      ? results.map(s=>`<div class="sess" onclick="openConv('${s.session_id}')">
+          <div class="sess-body"><div class="sess-summary">${esc(s.summary)}</div>
+          <div class="search-snippet">${esc(s.snippet||'')}</div>
+          <div class="sess-meta"><span class="proj">${esc(shortenPath(s.project_path))}</span><span>&middot;</span><span style="font-family:var(--mono);font-size:10px">${s.session_id.slice(0,8)}</span></div></div></div>`).join('')
+      : '<div style="padding:20px;text-align:center;color:var(--fg3)">No results</div>';
+  },300);
+}
+
+// ── Session list ──
+function sessionHTML(s) {
+  return `<div class="sess${s.session_id===state.currentSid?' active':''}" onclick="openConv('${s.session_id}')">
+    <div class="sess-actions" onclick="event.stopPropagation()">
+      <span class="sess-star${s.starred?' on':''}" onclick="quickStar('${s.session_id}',this)" title="Star">${s.starred?'&#9733;':'&#9734;'}</span>
+      <span class="sess-rename-btn" onclick="inlineRename('${s.session_id}',this.closest('.sess'))" title="Rename">&#9998;</span>
+      <span class="sess-rename-btn" style="font-size:15px" onclick="navigator.clipboard.writeText('claude --dangerously-skip-permissions --resume ${s.session_id}');toast('Copied')" title="Copy resume command">&#128203;</span>
+    </div>
+    <div class="sess-body">
+      ${s.custom_name?`<div class="sess-name" data-sid="${s.session_id}">${esc(s.custom_name)}</div>`:''}
+      <div class="sess-summary">${esc(s.summary)}</div>
+      <div class="sess-meta">
+        <span class="proj">${esc(shortenPath(s.project_path))}</span><span>&middot;</span><span>${timeAgo(s.modified)}</span>
+        ${s.message_count?`<span>&middot;</span><span>${s.message_count} msgs</span>`:''}
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderSessionList(sessions) {
+  $('#session-list').innerHTML=sessions.length
+    ? sessions.map(s=>sessionHTML(s)).join('')
+    : '<div style="padding:20px;text-align:center;color:var(--fg3)">No conversations found</div>';
+}
+
+// ── Inline rename from sidebar ──
+function inlineRename(sid, sessEl) {
+  if (sessEl.querySelector('.sess-rename-input')) { sessEl.querySelector('.sess-rename-input').focus(); return; }
+  const nameEl = sessEl.querySelector('.sess-name[data-sid="'+sid+'"]');
+  const body = sessEl.querySelector('.sess-body');
+  const current = nameEl ? nameEl.textContent : '';
+  const input = document.createElement('input');
+  input.className = 'sess-rename-input';
+  input.value = current;
+  input.placeholder = 'Name this conversation...';
+  if (nameEl) { nameEl.replaceWith(input); } else { body.insertBefore(input, body.firstChild); }
+  input.focus();
+  input.select();
+  const save = async () => {
+    const name = input.value.trim();
+    await post('/api/rename', {session_id: sid, name});
+    if (state.currentSid === sid) {
+      $('#conv-title').textContent = name || shortenPath(state.sessions.find(s=>s.session_id===sid)?.project_path||'');
+    }
+    if (state.tab==='recent') loadRecent(); else loadFolders();
+  };
+  input.addEventListener('keydown', e => { if(e.key==='Enter'){e.preventDefault();save();} if(e.key==='Escape'){if(state.tab==='recent')loadRecent();else loadFolders();} });
+  input.addEventListener('blur', save);
+}
+
+// ── Star from sidebar ──
+async function quickStar(sid, el) {
+  const res = await post('/api/star', {session_id:sid});
+  el.classList.toggle('on', res.starred);
+  el.innerHTML = res.starred ? '&#9733;' : '&#9734;';
+  // Re-sort if on recent tab
+  if(state.tab==='recent') loadRecent();
+}
+
+// ── Open conversation ──
+async function openConv(sid) {
+  state.currentSid=sid;
+  document.querySelectorAll('.sess').forEach(el=>el.classList.remove('active'));
+  // Find and highlight
+  document.querySelectorAll('.sess').forEach(el=>{if(el.onclick?.toString().includes(sid))el.classList.add('active');});
+
+  const data=await api('/api/conversation/'+sid);
+  const meta=data.meta;
+  $('#conv-title').textContent=meta.custom_name||meta.summary?.slice(0,80)||'Untitled';
+  $('#conv-star').innerHTML=meta.starred?'&#9733;':'&#9734;';
+  $('#conv-star').style.color=meta.starred?'var(--accent)':'var(--fg3)';
+  $('#conv-detail').textContent=shortenPath(meta.project_path)+' \u00b7 '+fmtDate(meta.modified)+(meta.message_count?` \u00b7 ${meta.message_count} messages`:'');
+  $('#continue-btn').textContent='claude --dangerously-skip-permissions --resume '+sid.slice(0,8)+'\u2026';
+  $('#continue-btn').dataset.sid=sid;
+
+  const toolResults={};
+  data.messages.forEach(m=>{if(m.role==='tool_result'&&m.tool_use_id)toolResults[m.tool_use_id]=m;});
+
+  let html='';
+  for(const m of data.messages){
+    if(m.role==='tool_result')continue;
+    if(m.role==='user'){
+      html+=`<div class="msg-user"><div class="msg-user-label">User</div><div class="msg-user-text">${esc(m.content)}</div></div>`;
+    } else if(m.role==='assistant'){
+      for(const b of(m.blocks||[])){
+        if(b.type==='text'&&b.text.trim()){
+          html+=`<div class="msg-asst-text"><div class="msg-asst-label">Assistant</div><div class="msg-text">${renderMd(b.text)}</div></div>`;
+        } else if(b.type==='tool_use'){
+          const summary=toolSummary(b.name,b.input);
+          const result=toolResults[b.id];
+          const rid='tool-'+b.id;
+          html+=`<div class="tool-call">
+            <div class="tool-header" onclick="document.getElementById('${rid}').classList.toggle('open')">
+              <div class="tool-dot" style="${b.name==='Write'?'background:var(--green)':b.name==='Edit'?'background:var(--blue)':''}"></div>
+              <span class="tool-name">${esc(b.name)}</span><span class="tool-summary">(${esc(summary)})</span>
+            </div>
+            <div class="tool-body${b.name==='Edit'||b.name==='Write'?' open':''}" id="${rid}">${renderToolBody(b)}</div>`;
+          if(result){
+            html+=`<div class="tool-result${result.is_error?' error':''}" style="display:${filters.results?'':'none'}"><pre>${esc(stripAnsi(result.content||''))}</pre></div>`;
+          }
+          html+='</div>';
+        } else if(b.type==='thinking'){
+          const tid='think-'+Math.random().toString(36).slice(2);
+          const preview=b.text.slice(0,60).replace(/\n/g,' ')+(b.text.length>60?'\u2026':'');
+          html+=`<div class="thinking" style="display:${filters.thinking?'':'none'}" onclick="document.getElementById('${tid}').classList.toggle('open')">
+            Thinking\u2026 ${esc(preview)}<div class="thinking-body" id="${tid}">${esc(b.text)}</div></div>`;
+        }
+      }
+    } else if(m.role==='summary'){
+      html+=`<div style="margin:12px 0;padding:8px 12px;background:var(--bg3);border-radius:4px;font-size:12px;color:var(--fg2)"><em>Summary: ${esc(m.content)}</em></div>`;
+    }
+  }
+
+  $('#messages').innerHTML=html;
+  $('#empty').style.display='none';
+  $('#conv-view').classList.add('show');
+
+  // Syntax highlight then scroll to bottom
+  document.querySelectorAll('#messages pre code').forEach(el=>hljs.highlightElement(el));
+  requestAnimationFrame(()=>{$('#messages').scrollTop=$('#messages').scrollHeight;});
+}
+
+// ── Header actions ──
+function copyContinue(){
+  const sid=$('#continue-btn').dataset.sid;
+  navigator.clipboard.writeText('claude --dangerously-skip-permissions --resume '+sid);
+  toast('Copied: claude --dangerously-skip-permissions --resume '+sid.slice(0,8)+'\u2026');
+}
+
+async function toggleStar(){
+  if(!state.currentSid)return;
+  const res=await post('/api/star',{session_id:state.currentSid});
+  $('#conv-star').innerHTML=res.starred?'&#9733;':'&#9734;';
+  $('#conv-star').style.color=res.starred?'var(--accent)':'var(--fg3)';
+  toast(res.starred?'Starred':'Unstarred');
+  if(state.tab==='recent')loadRecent();
+}
+
+function renameConv(){
+  if(!state.currentSid)return;
+  const titleEl=$('#conv-title');
+  if(titleEl.querySelector('input'))return;
+  const current=titleEl.textContent;
+  const input=document.createElement('input');
+  input.style.cssText='background:var(--bg);border:1px solid var(--accent);border-radius:3px;color:var(--fg);font-size:13px;font-weight:500;padding:2px 6px;outline:none;width:300px';
+  input.value=current;
+  input.placeholder='Name this conversation...';
+  titleEl.textContent='';
+  titleEl.appendChild(input);
+  input.focus();
+  input.select();
+  const save=()=>{
+    const name=input.value.trim();
+    post('/api/rename',{session_id:state.currentSid,name}).then(()=>{
+      titleEl.textContent=name||shortenPath(state.sessions.find(s=>s.session_id===state.currentSid)?.project_path||'');
+      if(state.tab==='recent')loadRecent();else loadFolders();
+    });
+  };
+  input.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();save();}if(e.key==='Escape'){titleEl.textContent=current;}});
+  input.addEventListener('blur',save);
+}
+
+function exportMd(){
+  if(!state.currentSid)return;
+  window.open('/api/export/'+state.currentSid,'_blank');
+}
+
+// ── Helpers ──
+function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+function stripAnsi(s){return(s||'').replace(/\x1B\[[0-9;]*[a-zA-Z]/g,'');}
+function renderMd(text){try{return marked.parse(text,{breaks:true,gfm:true});}catch{return'<p>'+esc(text)+'</p>';}}
+function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1500);}
+
+function renderToolBody(b) {
+  if (b.name === 'Edit' && b.input) {
+    let h = '';
+    if (b.input.file_path) h += `<div style="color:var(--fg2);margin-bottom:4px">${esc(b.input.file_path)}</div>`;
+    if (b.input.old_string) h += `<pre class="diff-old">${esc(b.input.old_string)}</pre>`;
+    if (b.input.new_string) h += `<pre class="diff-new">${esc(b.input.new_string)}</pre>`;
+    return h || `<pre>${esc(JSON.stringify(b.input,null,2))}</pre>`;
+  }
+  if (b.name === 'Write' && b.input) {
+    let h = '';
+    if (b.input.file_path) h += `<div style="color:var(--fg2);margin-bottom:4px">${esc(b.input.file_path)}</div>`;
+    if (b.input.content) h += `<pre class="write-content" style="max-height:300px;overflow-y:auto">${esc(b.input.content)}</pre>`;
+    return h || `<pre>${esc(JSON.stringify(b.input,null,2))}</pre>`;
+  }
+  return `<pre>${esc(JSON.stringify(b.input,null,2))}</pre>`;
+}
+
+function toolSummary(name,input){
+  if(!input)return'';
+  switch(name){
+    case'Bash':return input.description||(input.command||'').slice(0,100);
+    case'Read':return input.file_path||'';
+    case'Write':return input.file_path||'';
+    case'Edit':return input.file_path||'';
+    case'Grep':return`"${input.pattern||''}"${input.path?' in '+input.path:''}`;
+    case'Glob':return input.pattern||'';
+    case'Agent':return input.description||'';
+    case'WebSearch':return input.query||'';
+    case'WebFetch':return input.url||'';
+    default:{const s=JSON.stringify(input);return s.length>100?s.slice(0,100)+'\u2026':s;}
+  }
+}
+
+// ── Filters ──
+const filters={user:true,assistant:true,tools:true,thinking:false,results:false};
+function toggleFilter(key,btn){
+  filters[key]=!filters[key];
+  btn.classList.toggle('on',filters[key]);
+  const clsMap={user:'.msg-user',assistant:'.msg-assistant',tools:'.tool-call',thinking:'.thinking',results:'.tool-result'};
+  document.querySelectorAll(clsMap[key]).forEach(el=>el.style.display=filters[key]?'':'none');
+}
+
+// ── In-conversation search ──
+function searchInConv(q) {
+  const msgs = $('#messages');
+  // Clear previous highlights
+  msgs.querySelectorAll('mark.conv-hl').forEach(m => {
+    const parent = m.parentNode;
+    parent.replaceChild(document.createTextNode(m.textContent), m);
+    parent.normalize();
+  });
+  if (!q.trim()) return;
+  const walk = document.createTreeWalker(msgs, NodeFilter.SHOW_TEXT, null);
+  const ql = q.toLowerCase();
+  const nodes = [];
+  while (walk.nextNode()) {
+    if (walk.currentNode.nodeValue.toLowerCase().includes(ql)) nodes.push(walk.currentNode);
+  }
+  let first = null;
+  for (const node of nodes) {
+    const text = node.nodeValue;
+    const idx = text.toLowerCase().indexOf(ql);
+    if (idx < 0) continue;
+    const before = text.slice(0, idx);
+    const match = text.slice(idx, idx + q.length);
+    const after = text.slice(idx + q.length);
+    const mark = document.createElement('mark');
+    mark.className = 'conv-hl';
+    mark.style.cssText = 'background:var(--accent);color:var(--bg);padding:0 1px;border-radius:2px';
+    mark.textContent = match;
+    const parent = node.parentNode;
+    parent.insertBefore(document.createTextNode(before), node);
+    parent.insertBefore(mark, node);
+    parent.insertBefore(document.createTextNode(after), node);
+    parent.removeChild(node);
+    if (!first) first = mark;
+  }
+  if (first) first.scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+// ── Refresh ──
+function refresh(){
+  if(state.tab==='recent')loadRecent();else loadFolders();
+  toast('Refreshed');
+}
+
+// ── Init ──
+marked.use({breaks:true,gfm:true});
+loadRecent();
+</script>
+</body>
+</html>
