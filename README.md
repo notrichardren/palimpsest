@@ -24,6 +24,7 @@ Port/host: `PORT=8080 HOST=0.0.0.0 python3 server.py`
 - **Theme**: dark/light, persisted in localStorage
 - **Edit diffs**: red/green inline, expanded by default. Write content shown in green
 - **Scroll**: conversations scroll to bottom on load. 200px bottom padding so you can scroll past the last message
+- **Lightweight**: two files, no build step, no dependencies — easy to add features via Claude Code
 
 ## Layout
 
