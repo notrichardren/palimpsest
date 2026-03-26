@@ -26,6 +26,18 @@ Port/host: `PORT=8080 HOST=0.0.0.0 python3 server.py`
 - **Scroll**: conversations scroll to bottom on load. 200px bottom padding so you can scroll past the last message
 - **Lightweight**: two files, no build step, no dependencies — easy to add features via Claude Code
 
+## For Claude Code
+
+The entire app is two files — `server.py` (API) and `templates/index.html` (UI). No framework, no build step, no node_modules.
+
+**Data source:** `~/.claude/projects/<encoded-path>/<session-id>.jsonl`. Each JSONL file is one conversation. Lines are `{"type": "user"|"assistant", "message": {"role": ..., "content": ...}, ...}`. Tool use is `{"type": "tool_use", "name": "Bash", "input": {"command": "..."}}` inside assistant content arrays. Tool results come as separate user messages with `{"type": "tool_result", "tool_use_id": "..."}`.
+
+**Metadata:** `~/.palimpsest/meta.json` stores `{"starred": {"<sid>": true}, "names": {"<sid>": "custom name"}}`. Additive only — new sessions just don't have entries. Orphaned entries are harmless.
+
+**Adding features:** The server is a single `HTTPServer` subclass with `do_GET`/`do_POST`. Add a route, add a handler function. The frontend is vanilla JS in a `<script>` tag — `api(path)` fetches JSON, `post(path, body)` sends JSON. Messages render in `openConv()`. Session list renders in `sessionHTML()`. All state is in the `state` object.
+
+**Session cache:** The server reads `.session_cache.json` in each project dir for fast metadata (summary, message count, timestamps) and falls back to reading the first user message from the JSONL.
+
 ## Layout
 
 ```
